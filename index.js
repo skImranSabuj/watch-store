@@ -12,11 +12,11 @@ const port = process.env.PORT || 5000;
 //furebase Admin initialization
 var admin = require("firebase-admin");
 
-var serviceAccount = require('./extour-9aea2-firebase-adminsdk-7geoq-cd70b9f949.json');
+// var serviceAccount = require('./extour-9aea2-firebase-adminsdk-7geoq-cd70b9f949.json');
 
-admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount)
-});
+// admin.initializeApp({
+//     credential: admin.credential.cert(serviceAccount)
+// });
 
 //midleware
 app.use(cors());
@@ -46,6 +46,7 @@ async function run() {
         const database = client.db("watch_dorkar");
         const watchCollections = database.collection("watches");
         const orderCollection = database.collection('orders');
+        const reviewCollection = database.collection('reviews');
 
         //GET API
         app.get('/watches', async (req, res) => {
@@ -106,6 +107,18 @@ async function run() {
 
             const order = req.body;
             const result = await orderCollection.insertOne(order);
+            console.log(result);
+            res.json(result);
+        });
+        app.get('/reviews', async (req, res) => {
+                const cursor = reviewCollection.find({});
+                const reviews = await cursor.toArray();
+                res.send(reviews);
+        });
+        // Add review API:
+        app.post('/reviews', async (req, res) => {
+            const review = req.body;
+            const result = await reviewCollection.insertOne(review);
             console.log(result);
             res.json(result);
         });
