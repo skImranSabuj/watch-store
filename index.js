@@ -47,6 +47,7 @@ async function run() {
         const watchCollections = database.collection("watches");
         const orderCollection = database.collection('orders');
         const reviewCollection = database.collection('reviews');
+        const userCollection = database.collection('users');
 
         //GET API
         app.get('/watches', async (req, res) => {
@@ -120,6 +121,14 @@ async function run() {
             const review = req.body;
             const result = await reviewCollection.insertOne(review);
             console.log(result);
+            res.json(result);
+        });
+        //User POST API
+        app.post('/users', async (req, res) => {
+            const newUser = req.body;
+            const result = await userCollection.insertOne(newUser);
+            console.log('got new user:', req.body);
+            console.log('added user:', result);
             res.json(result);
         });
         // Use POST to get orders by id
