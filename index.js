@@ -131,6 +131,14 @@ async function run() {
             console.log('added user:', result);
             res.json(result);
         });
+        app.put('/users', async (req, res) => {
+            const user = req.body;
+            const filter = { email: user.email };
+            const options = { upsert: true };
+            const updateDoc = { $set: user };
+            const result = await userCollection.updateOne(filter, updateDoc, options);
+            res.json(result);
+        });
         // Use POST to get orders by id
         app.post('orders/byKeys', async (req, res) => {
             const keys = req.body;
