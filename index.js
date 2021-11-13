@@ -116,6 +116,11 @@ async function run() {
                 const reviews = await cursor.toArray();
                 res.send(reviews);
         });
+        app.get('/users', async (req, res) => {
+                const cursor = userCollection.find({});
+                const users = await cursor.toArray();
+                res.send(users);
+        });
         // Add review API:
         app.post('/reviews', async (req, res) => {
             const review = req.body;
@@ -180,6 +185,32 @@ async function run() {
             console.log('updating', id)
             res.json(result)
         })
+        //UPDATE API
+        app.get('/users/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email: email };
+            const user = await usersCollection.findOne(query);
+            let isAdmin = false;
+            if (user?.role === 'admin') {
+                isAdmin = true;
+            }
+            res.json({ admin: isAdmin });
+        });
+        app.put('/users/admin', async (req, res) => {
+            const user = req.body;
+            if (user.email) {
+                const requesterAccount = await userCollection.findOne({ email: user.email });
+                if (requesterAccount.role === 'admin') {
+                    const filter = { email: user.email };
+                    const updateDoc = { $set: { role: 'admin' } };
+                    const result = await userCollection.updateOne(filter, updateDoc);
+                    res.json(result);
+                }
+            }
+            else {
+                res.status(403).json({ message: 'you do not have access to make admin' })
+            }
+        });
     } finally {
         // await client.close();
     }
