@@ -170,6 +170,14 @@ async function run() {
             console.log(`place ${id}  deleted Successfully`, result);
             res.json(result)
         })
+        //DELETE Watch
+        app.delete('/watches/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) }
+            const result = await watchCollections.deleteOne(query);
+            console.log(`watch ${id}  deleted Successfully`, result);
+            res.json(result)
+        })
         //UPDATE API
         app.put('/orders/:id', async (req, res) => {
             const id = req.params.id;
@@ -185,27 +193,39 @@ async function run() {
             console.log('updating', id)
             res.json(result)
         })
-        //UPDATE API
+        // UPDATE API
         app.get('/users/:email', async (req, res) => {
             const email = req.params.email;
             const query = { email: email };
-            const user = await usersCollection.findOne(query);
+            const user = await userCollection.findOne(query);
             let isAdmin = false;
-            if (user?.role === 'admin') {
+            if (user.role!==null && user.role=== 'Admin') {
                 isAdmin = true;
             }
             res.json({ admin: isAdmin });
         });
         app.put('/users/admin', async (req, res) => {
             const user = req.body;
+            const id = req.params.id;
+            const options = { upsert: true };
             if (user.email) {
                 const requesterAccount = await userCollection.findOne({ email: user.email });
-                if (requesterAccount.role === 'admin') {
-                    const filter = { email: user.email };
-                    const updateDoc = { $set: { role: 'admin' } };
-                    const result = await userCollection.updateOne(filter, updateDoc);
+                const filter = { email: user.email };
+                let userRole='';
+                if (requesterAccount.role) {
+                    console.log(requesterAccount.role, '//')
+                    requesterAccount.role==='Admin'? userRole='User': userRole='Admin';
+                    const updateDoc = { $set: { role: userRole } }
+                    const result = await userCollection.updateOne(filter, updateDoc, options);
+                res.json(result);
+                }
+                else{
+                    const updateDoc = { $set: { role: 'Admin' } };
+                    const result = await userCollection.updateOne(filter, updateDoc, options);
                     res.json(result);
                 }
+                
+                
             }
             else {
                 res.status(403).json({ message: 'you do not have access to make admin' })
